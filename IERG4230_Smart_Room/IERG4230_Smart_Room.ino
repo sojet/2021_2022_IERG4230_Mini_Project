@@ -7,6 +7,8 @@
 #include <WiFiClient.h>
 #include <Wire.h>
 #include "AM2320.h"
+#include <iostream>   // std::cout
+#include <string>     // std::string, std::to_string
 
 //Define the connection to hotspot
 #ifndef STASSID
@@ -19,14 +21,19 @@ const char* password = STAPSK;
 ESP8266WiFiMulti WiFiMulti;
 ESP8266WebServer server(80);
 
+//Light Sensor Setup
+const int ledPin = 16;         // GPIO16(D0)
+const int ldrPin_analog = A0;  // ADC
+const int ldrPin_digital = 12; // GPIO12(D6)
+
 //This is for calling the function of AM2320 for getting humidity and temperture
 AM2320 th;
 
 //API Keys
 //Write a channel feed
-const char* write_channel = "http://api.thingspeak.com/update?api_key=FIUY5IXW0Y1LDKYZ&";
+const String write_channel = "http://api.thingspeak.com/update?api_key=FIUY5IXW0Y1LDKYZ&";
 //Read a channel feed
-const char* read_channel = "http://api.thingspeak.com/channels/1603157/feeds.json?api_key=HSB377D2S5LD0I0K&";
+const String read_channel = "http://api.thingspeak.com/channels/1603157/feeds.json?api_key=HSB377D2S5LD0I0K&";
 //Read a channel field
 //https://api.thingspeak.com/channels/1603157/fields/1.json?api_key=HSB377D2S5LD0I0K&results=2
 //Read channel status change
@@ -37,9 +44,13 @@ void setup() {
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
 
-  Serial.println();
-  Serial.println();
-  Serial.println();
+  Serial.println("ESP8266-12E/F LDR testing program\n");
+  Serial.println("Build-in LED1 at GPIO-16(D0)");
+  Serial.println("Mic analog Pin at A0");
+  Serial.println("Mic digital Pin at GPIO-12(D6)");
+  pinMode(ledPin, OUTPUT);
+  pinMode(ldrPin_analog, INPUT);
+  pinMode(ldrPin_digital, INPUT);
 
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] WAIT %d...\n", t);
@@ -54,13 +65,18 @@ void setup() {
 }
 
 void loop() {
-  // wait for WiFi connection
-//    if ((WiFi.status() == WL_CONNECTED)) {
+  int ldrStatus = analogRead(ldrPin_analog);
+  float temperature = th.getTemperature();
+  float humidity = th.getHumidity();
+
+  //wait for the wifi connection
   if ((WiFiMulti.run() == WL_CONNECTED)) {
 
     WiFiClient client;
     HTTPClient http;
-    http.begin(client,"http://api.thingspeak.com/update?api_key=FIUY5IXW0Y1LDKYZ&field1=0&field2=1");  
+    String request_url = write_channel + "field1=" + temperature + "&field2=" + humidity + "&field3=" + ldrStatus;
+    Serial.println(request_url);
+    http.begin(client, request_url);
     int httpCode = http.GET();
 
     if (httpCode>0){
@@ -68,37 +84,19 @@ void loop() {
       Serial.println(httpCode);
       //Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       Serial.println(payload);
+      Serial.print("humidity: ");
+      Serial.print(humidity);
+      Serial.print("%");
+      Serial.print("|| temperature: ");
+      Serial.print(temperature);
+      Serial.print("*C");
+      Serial.print("Light Sensor Status: ");
+      Serial.print(ldrStatus);
+      Serial.println("---------------");
     }
     http.end();
     
     }
     
-//    Serial.print("[HTTP] begin...\n");
-//    if (http.begin(client, url_on)) {  // HTTP
-//
-//
-//      Serial.print("[HTTP] GET...\n");
-//      // start connection and send HTTP header
-//      int httpCode = http.GET();
-//
-//      // httpCode will be negative on error
-//      if (httpCode > 0) {
-//        // HTTP header has been send and Server response header has been handled
-//        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-//
-//        // file found at server
-//        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-//          String payload = http.getString();
-//          Serial.println(payload);
-//        }
-//      } else {
-//        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-//      }
-//
-//      http.end();
-//    } else {
-//      Serial.printf("[HTTP} Unable to connect\n");
-//    }
-
   delay(1000);
 }
