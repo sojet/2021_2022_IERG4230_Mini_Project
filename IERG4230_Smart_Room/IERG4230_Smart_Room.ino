@@ -7,8 +7,8 @@
 #include <WiFiClient.h>
 #include <Wire.h>
 #include "AM2320.h"
-#include <iostream>   // std::cout
-#include <string>     // std::string, std::to_string
+#include <stdio.h> 
+#include "TPLink.h"
 
 //Define the connection to hotspot
 #ifndef STASSID
@@ -29,6 +29,10 @@ const int ldrPin_digital = 12; // GPIO12(D6)
 //This is for calling the function of AM2320 for getting humidity and temperture
 AM2320 th;
 
+//TP-Link SmartPlug
+char* hs110_1 = "192.168.137.194"; //It should be found on mobile hotspot and be changed for each connection
+TPL_SmartPlug SP1(hs110_1);
+
 //API Keys
 //Write a channel feed
 const String write_channel = "http://api.thingspeak.com/update?api_key=FIUY5IXW0Y1LDKYZ&";
@@ -38,6 +42,10 @@ const String read_channel = "http://api.thingspeak.com/channels/1603157/feeds.js
 //https://api.thingspeak.com/channels/1603157/fields/1.json?api_key=HSB377D2S5LD0I0K&results=2
 //Read channel status change
 //https://api.thingspeak.com/channels/1603157/status.json?api_key=HSB377D2S5LD0I0K
+//Write API Key: 
+//FIUY5IXW0Y1LDKYZ
+//Read API Keys:
+//HSB377D2S5LD0I0K
 
 void setup() {
 
@@ -65,16 +73,27 @@ void setup() {
 }
 
 void loop() {
+  //Get status for light sensor
   int ldrStatus = analogRead(ldrPin_analog);
+  
+  //Get temperature and humidity from AM2320
   float temperature = th.getTemperature();
   float humidity = th.getHumidity();
 
+  //Get Current Voltage, Current, Power and Relay Status
+  float Voltage = SP1.V;
+  float Current = SP1.A;
+  float Power = SP1.W;
+  bool isReplayOn = SP1.Relay;
+  
   //wait for the wifi connection
   if ((WiFiMulti.run() == WL_CONNECTED)) {
-
+    SP1.Print();
     WiFiClient client;
     HTTPClient http;
-    String request_url = write_channel + "field1=" + temperature + "&field2=" + humidity + "&field3=" + ldrStatus;
+    String request_url = write_channel + "field1=" + temperature + "&field2=" + humidity + "&field3=" + ldrStatus 
+                         + "&field4=" + Voltage + "&field5=" + Current + "&field6=" + Power 
+                         + "&field7=" + isReplayOn;
     Serial.println(request_url);
     http.begin(client, request_url);
     int httpCode = http.GET();
@@ -90,13 +109,21 @@ void loop() {
       Serial.print("|| temperature: ");
       Serial.print(temperature);
       Serial.print("*C");
-      Serial.print("Light Sensor Status: ");
+      Serial.print("|| Light Sensor Status: ");
       Serial.print(ldrStatus);
       Serial.println("---------------");
     }
     http.end();
     
-    }
+  }
+
+//Set the temperature to turn on/ off the smart plug
+  if ( temperature >= 30 ){
+    SP1.turnOn();
+  }
+  else{
+    SP1.turnOff();
+  }
     
   delay(1000);
 }
