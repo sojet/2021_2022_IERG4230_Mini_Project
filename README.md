@@ -20,7 +20,7 @@
 <ol>
     <li>Set the smart plug to the desired wi-fi network</li>
     <li>Find out the ip-address of the smart plug</li>
-    <li>Edit the ip-address of the smart plug <code>char* hs110_1<code> in IERG4230_Smart_Room.ino </li>
+    <li>Edit the ip-address of the smart plug char* hs110_1 in IERG4230_Smart_Room.ino </li>
     <li>Upload IERG4230_Smart_Room.ino to ESP8266 board</li>
 </ol>
 
