@@ -41,24 +41,24 @@
     </tr>
     <tr>
         <th>Field 3</th>
-        <th>LDR Status</th>
-        <th>ldrStatus</th>
-        <th>int</th>
-        <th>Analog reading from the light sensor</th>
+        <th>Power</th>
+        <th>Power</th>
+        <th>float</th>
+        <th>Current power reading of smart plug</th>
     </tr>
     <tr>
         <th>Field 4</th>
-        <th>Voltage</th>
-        <th>Voltage</th>
-        <th>float</th>
-        <th>Current voltage reading of smart plug</th>
+        <th>Air-con Status</th>
+        <th>isReplayOn</th>
+        <th>bool</th>
+        <th>The switch status of smartplug, on = 1; off = 0</th>
     </tr>
     <tr>
         <th>Field 5</th>
-        <th>Current</th>
-        <th>Current</th>
-        <th>float</th>
-        <th>Current current reading of smart plug</th>
+        <th>Web Command</th>
+        <th>Web Command</th>
+        <th>int</th>
+        <th>1</th>
     </tr>
     <tr>
         <th>Field 6</th>
