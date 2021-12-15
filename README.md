@@ -25,6 +25,24 @@
 </ol>
 
 <h2> ThingSpeak API KEY-VALUE</h2>
+<h3>Channel 1</h3>
+<label>Table 1: Channel 1 API Key</lablel>
+<table>
+    <tr>
+        <th>API KEY Type</th>
+        <th>Key</th>
+    </tr>
+    <tr>
+        <th>Write API Key</th>
+        <th>FIUY5IXW0Y1LDKYZ</th>
+    </tr>
+        <th>Read API Keys</th>
+        <th>HSB377D2S5LD0I0K/th>
+    <tr>
+    </tr>
+</table>
+
+<label>Table 2: Channel 1 API field</label>
 <table>
     <tr>
         <th>Field Number</th>
@@ -60,6 +78,34 @@
         <th>isReplayOn</th>
         <th>bool</th>
         <th>The switch status of smartplug, on = 1; off = 0</th>
+    </tr>
+</table>
+
+<h3>Channel 2</h3>
+<label>Table 3: Channel 2 API Key</lablel>
+<table>
+    <tr>
+        <th>API KEY Type</th>
+        <th>Key</th>
+    </tr>
+    <tr>
+        <th>Write API Key</th>
+        <th>4RNEV54YURIE2BUI</th>
+    </tr>
+        <th>Read API Keys</th>
+        <th>1V4WJGNG9YS6LG32/th>
+    <tr>
+    </tr>
+</table>
+
+<label>Table 4: Channel 2 API field</label>
+<table>
+    <tr>
+        <th>Field Number</th>
+        <th>Name</th>
+        <th>Variable in Arduino</th>
+        <th>Data Type</th>
+        <th>Explanation</th>
     </tr>
     <tr>
         <th>Field 5</th>
