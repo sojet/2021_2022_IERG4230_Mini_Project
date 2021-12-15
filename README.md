@@ -56,22 +56,32 @@
     <tr>
         <th>Field 5</th>
         <th>Web Command</th>
-        <th>Web Command</th>
+        <th>web_app_command</th>
         <th>int</th>
-        <th>1</th>
+        <th>
+            <br>Set the case to control the air-con</br>
+            <br>1: Manual switch on/ off the air-con</br>
+            <br>2: Set a temperature to switch on/ off the air-con by web app automatically</br>
+            <br>3: Automatically switch on/ off the air-con by programme built-in on ESP8266
+            </br>
+        </th>
     </tr>
     <tr>
         <th>Field 6</th>
-        <th>Power</th>
-        <th>Power</th>
-        <th>float</th>
-        <th>Current power reading of smart plug</th>
+        <th>Turn on/ off Air-con</th>
+        <th>web_app_switch_air_con</th>
+        <th>bool</th>
+        <th>
+        <br>Control to turn on/ off the air-con by the web app</br>
+        <br>1/ True: Turn on the air-con</br>
+        <br>0/ False: Turn off the air-con</br>
+        </th>
     </tr>
     <tr>
         <th>Field 7</th>
-        <th>Air-con Status</th>
-        <th>isReplayOn</th>
-        <th>bool</th>
-        <th>The switch status of smartplug, on = 1; off = 0</th>
+        <th>Air-Con Control Temperature</th>
+        <th>set_temperature</th>
+        <th>float</th>
+        <th>The temperature set to switch on/ off the air-con by web app automatically</th>
     </tr>
 </table>
