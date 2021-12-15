@@ -16,6 +16,13 @@
     <li>TPLink.h: Header file for TP-Link Smart Wi-Fi Plug</li>
 </ol>
 
+<h2>How to use the Smart Room ?</h2>
+<ol>
+    <li>Set the smart plug to the desired wi-fi network</li>
+    <li>Find out the ip-address of the smart plug</li>
+    <li>Edit the ip-address of the smart plug <code>char* hs110_1<code> in <l>IERG4230_Smart_Room.ino</l></li>
+    <li>Upload <l>IERG4230_Smart_Room.ino</l> to ESP8266 board</li>
+</ol>
 <h2> ThingSpeak API KEY-VALUE</h2>
 <table>
     <tr>
