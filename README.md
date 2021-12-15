@@ -37,7 +37,7 @@
         <th>FIUY5IXW0Y1LDKYZ</th>
     </tr>
         <th>Read API Keys</th>
-        <th>HSB377D2S5LD0I0K/th>
+        <th>HSB377D2S5LD0I0K</th>
     <tr>
     </tr>
 </table>
@@ -93,7 +93,7 @@
         <th>4RNEV54YURIE2BUI</th>
     </tr>
         <th>Read API Keys</th>
-        <th>1V4WJGNG9YS6LG32/th>
+        <th>1V4WJGNG9YS6LG32</th>
     <tr>
     </tr>
 </table>
