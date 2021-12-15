@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!-- saved from url=(0069)http://storage.googleapis.com/bucket-yukikiss/IERG4230_Web/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <title>Remote Air-con</title>
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="./index_files/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-lg-8">
+                    <h3>Data Overview:</h3>
+                    <h5>Last Query Time:</h5>
+                    <p id="last_request">Wed Dec 15 2021 12:32:55 GMT+0800 (Hong Kong Standard Time)</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Value</th>
+                                <th>Last Update</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Temperature</td>
+                                <td id="temperature_value">24.00</td>
+                                <td id="temperature_update">2021/12/13 &#19979;&#21320;8:48:19</td>
+                            </tr>
+    
+                            <tr>
+                                <td>Humidity</td>
+                                <td id="humidity_value">53.00</td>
+                                <td id="humidity_update">2021/12/13 &#19979;&#21320;8:48:19</td>
+                            </tr>
+    
+                            <tr>
+                                <td>Air-con status</td>
+                                <td id="aircon_value">0 (OFF)</td>
+                                <td id="aircon_update">2021/12/13 &#19979;&#21320;8:48:19</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-lg-4">
+                    <h3>Action</h3>
+                    
+                </div>
+                
+            </div>
+        </div>
+        <script src="./index_files/bootstrap.min.js"></script>
+        <script src="./index_files/jquery.min.js"></script>
+        <script src="./index_files/highcharts.src.js"></script>
+        <script>
+            function translateTimeZone(utcTime){
+                // translate utc time to time in +8 timezone
+                var dt = new Date(utcTime);
+                return dt.toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'});
+            }
+
+            function updateLatestTemperature(){
+                let url = "http://api.thingspeak.com/channels/1603157/fields/1.json?api_key=HSB377D2S5LD0I0K&results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"temperature" : data.feeds[0].field1,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $("#temperature_value").text(result.temperature);
+                    $("#temperature_update").text(translateTimeZone(result.last_update));
+                });
+            }
+
+            function updateLatestHumidity(){
+                let url = "http://api.thingspeak.com/channels/1603157/fields/2.json?api_key=HSB377D2S5LD0I0K&results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"humidity" : data.feeds[0].field2,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $("#humidity_value").text(result.humidity);
+                    $("#humidity_update").text(translateTimeZone(result.last_update));
+                });
+            }
+
+            function updateLatestAirconStatus(){
+                let url = "http://api.thingspeak.com/channels/1603157/fields/7.json?api_key=HSB377D2S5LD0I0K&results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"status" : data.feeds[0].field7,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    if (result.status == 0){
+                        result.status += ' (OFF)';
+                    } else {
+                        result.status += ' (ON)';
+                    }
+                    $("#aircon_value").text(result.status);
+                    $("#aircon_update").text(translateTimeZone(result.last_update));
+                });
+            }
+
+            function update(){
+                let dn = Date();
+                $('#last_request').text(dn.toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'}))
+                updateLatestTemperature();
+                updateLatestHumidity();
+                updateLatestAirconStatus();
+            }
+
+            $(document).ready(function(){
+                update();
+                setInterval(function(){ 
+                    update();
+                 }, 5000);
+            })
+            
+            
+        </script>
+
+    
+
+</body></html>

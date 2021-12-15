@@ -13,8 +13,10 @@
 //Define the connection to hotspot
 #ifndef STASSID
 //mobile hotspot
-#define STASSID "ssha"
-#define STAPSK "goodmorning3"
+//#define STASSID "ssha"
+//#define STAPSK "goodmorning3"
+#define STASSID "Xx802xX"
+#define STAPSK "23799766"
 #endif
 const char* ssid = STASSID;
 const char* password = STAPSK;
