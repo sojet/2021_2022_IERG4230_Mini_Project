@@ -1,4 +1,6 @@
+//https://randomnerdtutorials.com/esp8266-nodemcu-http-get-post-arduino/
 #include <Arduino.h>
+#include <Arduino_JSON.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
@@ -13,31 +15,27 @@
 //Define the connection to hotspot
 #ifndef STASSID
 //mobile hotspot
-//#define STASSID "ssha"
-//#define STAPSK "goodmorning3"
-#define STASSID "Xx802xX"
-#define STAPSK "23799766"
+#define STASSID "ssha"
+#define STAPSK "goodmorning3"
+//#define STASSID "Xx802xX"
+//#define STAPSK "23799766"
 #endif
 const char* ssid = STASSID;
 const char* password = STAPSK;
 ESP8266WiFiMulti WiFiMulti;
 ESP8266WebServer server(80);
 
-//Light Sensor Setup
-const int ledPin = 16;         // GPIO16(D0)
-const int ldrPin_analog = A0;  // ADC
-const int ldrPin_digital = 12; // GPIO12(D6)
-
 //This is for calling the function of AM2320 for getting humidity and temperture
 AM2320 th;
 
 //TP-Link SmartPlug
-char* hs110_1 = "192.168.137.194"; //It should be found on mobile hotspot and be changed for each connection
+char* hs110_1 = "192.168.137.134"; //It should be found on mobile hotspot and be changed for each connection
 TPL_SmartPlug SP1(hs110_1);
 
 //API Keys
 //Write a channel feed
 const String write_channel = "http://api.thingspeak.com/update?api_key=FIUY5IXW0Y1LDKYZ&";
+const String write_channel2 = "http://api.thingspeak.com/update?api_key=4RNEV54YURIE2BUI&";
 //Read a channel feed
 const String read_channel = "http://api.thingspeak.com/channels/1603157/feeds.json?api_key=HSB377D2S5LD0I0K&";
 //Read a channel field
@@ -54,14 +52,6 @@ void setup() {
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
 
-  Serial.println("ESP8266-12E/F LDR testing program\n");
-  Serial.println("Build-in LED1 at GPIO-16(D0)");
-  Serial.println("Mic analog Pin at A0");
-  Serial.println("Mic digital Pin at GPIO-12(D6)");
-  pinMode(ledPin, OUTPUT);
-  pinMode(ldrPin_analog, INPUT);
-  pinMode(ldrPin_digital, INPUT);
-
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] WAIT %d...\n", t);
     Serial.flush();
@@ -75,10 +65,7 @@ void setup() {
 }
 
 void loop() {
-  //Get status for light sensor
-  int ldrStatus = analogRead(ldrPin_analog);
-  
-  //Get temperature and humidity from AM2320
+    //Get temperature and humidity from AM2320
   float temperature = th.getTemperature();
   float humidity = th.getHumidity();
 
@@ -90,17 +77,22 @@ void loop() {
   
   //wait for the wifi connection
   if ((WiFiMulti.run() == WL_CONNECTED)) {
-    SP1.Print();
+    //Send requests to the server
+    Serial.println("---------------");
+    SP1.Print(); // print out information of the smart plug
+    Serial.println("---------------");
     WiFiClient client;
     HTTPClient http;
-    String request_url = write_channel + "field1=" + temperature + "&field2=" + humidity + "&field3=" + ldrStatus 
-                         + "&field4=" + Voltage + "&field5=" + Current + "&field6=" + Power 
-                         + "&field7=" + isReplayOn;
-    Serial.println(request_url);
-    http.begin(client, request_url);
+    String request_url1 = write_channel + "field1=" + temperature + "&field2=" + humidity  
+                         + "&field3=" + Power 
+                         + "&field4=" + isReplayOn;
+    Serial.println(request_url1);
+    Serial.println("---------------");
+    
+    http.begin(client, request_url1);
     int httpCode = http.GET();
-
-    if (httpCode>0){
+    http.end();
+    if (httpCode > 0){
       String payload = http.getString();
       Serial.println(httpCode);
       //Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -111,21 +103,121 @@ void loop() {
       Serial.print("|| temperature: ");
       Serial.print(temperature);
       Serial.print("*C");
-      Serial.print("|| Light Sensor Status: ");
-      Serial.print(ldrStatus);
       Serial.println("---------------");
     }
-    http.end();
-    
-  }
+    else{
+      Serial.println("Error: ");
+      Serial.print(httpCode);
+      Serial.println("---------------");
+    }
 
-//Set the temperature to turn on/ off the smart plug
-  if ( temperature >= 30 ){
-    SP1.turnOn();
+    //Receive request from the server
+    //WiFiClient client2;
+    HTTPClient http2;
+    String server_url = "http://api.thingspeak.com/channels/1608893/feeds.json?api_key=1V4WJGNG9YS6LG32&results=1";
+    http2.begin(client, server_url);
+    int http2Code = http2.GET();
+
+    if (http2Code > 0){
+      String payload2 = http2.getString();
+      
+      //Handle response
+      JSONVar command = JSON.parse(payload2);
+      Serial.println("payload2: ");
+      Serial.println(command);
+      Serial.println(command["feeds"]);
+      String command_detail = JSON.stringify(command["feeds"]);
+      command_detail.replace("[","");
+      command_detail.replace("]","");
+      Serial.println(command_detail);
+      JSONVar command_control = JSON.parse(command_detail);     
+      Serial.println("Web App Command: ");
+      Serial.println(command_control["field1"]);
+      Serial.println("Turn on/off Command: ");
+      Serial.println(command_control["field2"]);
+      Serial.println("Air-con Temperature: ");
+      Serial.println(command_control["field3"]);
+      Serial.println("---------------");
+
+      //Smart Plug Control Command
+      String web_app_command = JSON.stringify(command_control["field1"]);
+      String web_app_switch_air_con = JSON.stringify(command_control["field2"]);
+      String web_app_temperature = JSON.stringify(command_control["field3"]);
+
+      web_app_command.replace("\"",0);
+      web_app_switch_air_con.replace("\"",0);
+      web_app_temperature.replace("\"",0);
+      //Resend the received api to the server
+      HTTPClient http3;
+      String request_url2 = write_channel2 + "field1=" + web_app_command + "&field2=" + web_app_switch_air_con
+                         + "&field3=" + web_app_temperature ;
+      Serial.println(request_url2);
+      Serial.println("---------------");
+      http3.begin(client, request_url2);
+      int http3Code = http3.GET();
+      Serial.println(http3Code);
+      Serial.println("---------------");
+      http3.end();
+      /*web_app_command: control the smart-plug
+       * 1: manual on/ off the air-con by web app
+       * 2: set temperature to turn on/ off the air-con by web app
+       * 3: follow the build-in setup to turn on/off the air-con by web app
+       */
+      if ( web_app_command == "1"){
+        Serial.println("Command 1");
+        if ( web_app_switch_air_con == "1" ){
+            Serial.println("The air-con is on!");
+            SP1.turnOn();
+        }
+        else if ( web_app_switch_air_con == "0" ){
+            SP1.turnOff();
+        }
+      }
+      else if ( web_app_command == "2"){
+         float set_temperature = web_app_temperature.toFloat();
+         Serial.println("Command 2");
+
+         if ( temperature >= set_temperature ){
+          Serial.println("The air-con is on!");
+          SP1.turnOn();
+         }
+         else {
+          SP1.turnOff();
+         }
+      }
+      else if ( web_app_command == "3"){
+        Serial.println("Command 3");
+        
+        if ( temperature >= 30 ){
+          Serial.println("The air-con is on!");
+          SP1.turnOn();
+        }
+        else{
+          SP1.turnOff();
+          } 
+      }
+      else{
+        Serial.println("Fail to get command from the web app!");
+        Serial.println("---------------");
+        if ( temperature >= 30 ){
+          SP1.turnOn();
+        }
+        else{
+          SP1.turnOff();
+          } 
+      }
+    }
+    else{
+      Serial.println("Error: ");
+      Serial.print(http2Code);
+      Serial.println("---------------");
+    }
+    http2.end();
+    
   }
   else{
-    SP1.turnOff();
+    Serial.println("WiFi Disconnected!");
   }
-    
-  delay(1000);
+
+  delay(20000);
 }
