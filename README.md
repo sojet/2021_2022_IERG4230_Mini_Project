@@ -108,7 +108,7 @@
         <th>Explanation</th>
     </tr>
     <tr>
-        <th>Field 5</th>
+        <th>Field 1</th>
         <th>Web Command</th>
         <th>web_app_command</th>
         <th>int</th>
@@ -121,7 +121,7 @@
         </th>
     </tr>
     <tr>
-        <th>Field 6</th>
+        <th>Field 2</th>
         <th>Turn on/ off Air-con</th>
         <th>web_app_switch_air_con</th>
         <th>bool</th>
@@ -132,7 +132,7 @@
         </th>
     </tr>
     <tr>
-        <th>Field 7</th>
+        <th>Field 3</th>
         <th>Air-Con Control Temperature</th>
         <th>set_temperature</th>
         <th>float</th>
