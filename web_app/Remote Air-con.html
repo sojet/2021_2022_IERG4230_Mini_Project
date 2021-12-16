@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!-- saved from url=(0069)http://storage.googleapis.com/bucket-yukikiss/IERG4230_Web/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <title>Remote Air-con</title>
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="./Remote Air-con_files/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row mt-5">
+                <h3>Data Overview:</h3>
+                <h5>Last Query Time:</h5>
+                <p id="last_request">Thu Dec 16 2021 16:38:59 GMT+0800 (Hong Kong Standard Time)</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Value</th>
+                            <th>Last Update</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Temperature</td>
+                            <td id="temperature_value">0</td>
+                            <td id="temperature_update">2021/12/16 &#19978;&#21320;1:57:58</td>
+                        </tr>
+
+                        <tr>
+                            <td>Humidity</td>
+                            <td id="humidity_value">0</td>
+                            <td id="humidity_update">2021/12/16 &#19978;&#21320;1:57:58</td>
+                        </tr>
+
+                        <tr>
+                            <td>Air-con status</td>
+                            <td id="aircon_value">0 (OFF)</td>
+                            <td id="aircon_update">2021/12/16 &#19978;&#21320;1:57:58</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <class class="row mt-5">
+                <div class="col-lg-12">
+                    <h3>Action</h3>
+                    <h5 class="mt-3">Automatic/Manual Control Mode</h5>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="control_mode" id="control_mode1" value="1">
+                        <label class="form-check-label" for="mode1">Manual</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="control_mode" id="control_mode2" value="2">
+                        <label class="form-check-label" for="mode2">Automatic</label>
+                    </div>
+                    <h5 class="mt-3">Manual Switch</h5>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="manual_switch" id="manual_switch0" value="0">
+                        <label class="form-check-label" for="manual1">Off</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="manual_switch" id="manual_switch1" value="1">
+                        <label class="form-check-label" for="manual2">On</label>
+                    </div>
+                    <h5 class="mt-3">Automatic Control Threshold</h5>
+                    <input class="form-control" type="text" name="auto_threshold" id="auto_threshold" placeholder="">
+
+                    <button class="btn btn-primary mt-4 mb-4" id="save_change">Save Changes</button>
+                    
+                    <div class="alert alert-info alert-dismissible fade show" id="alert" role="alert">
+                        <strong>Success!</strong> Your Air-con control mode has been updated.
+                        <button type="button" class="btn-close" id="close_alert"></button>
+                    </div>
+                </div>
+            </class>
+        </div>
+        <script src="./Remote Air-con_files/bootstrap.min.js"></script>
+        <script src="./Remote Air-con_files/jquery.min.js"></script>
+        <script>
+            function translateTimeZone(utcTime){
+                // translate utc time to time in +8 timezone
+                var dt = new Date(utcTime);
+                return dt.toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'});
+            }
+
+            function updateLatestTemperature(){
+                // get temperature data and update table cell
+                let url = "http://api.thingspeak.com/channels/1603157/fields/1.json?results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"temperature" : data.feeds[0].field1,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $("#temperature_value").text(result.temperature);
+                    $("#temperature_update").text(translateTimeZone(result.last_update));
+                });
+            }
+
+            function updateLatestHumidity(){
+                // get hunidity data and update table cell
+                let url = "http://api.thingspeak.com/channels/1603157/fields/2.json?results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"humidity" : data.feeds[0].field2,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $("#humidity_value").text(result.humidity);
+                    $("#humidity_update").text(translateTimeZone(result.last_update));
+                });
+            }
+
+            function updateLatestAirconStatus(){
+                // get current aircon status and update table cell
+                let url = "http://api.thingspeak.com/channels/1603157/fields/4.json?results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"status" : data.feeds[0].field4,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    if (result.status == 0){
+                        result.status += ' (OFF)';
+                    } else {
+                        result.status += ' (ON)';
+                    }
+                    $("#aircon_value").text(result.status);
+                    $("#aircon_update").text(translateTimeZone(result.last_update));
+                });
+            }
+
+            function updateLatestControlMode(){
+                // get hunidity data and update table cell
+                let url = "http://api.thingspeak.com/channels/1608893/fields/1.json?results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"control_mode" : data.feeds[0].field1,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $('#control_mode'+result.control_mode).prop('checked', 'true');
+                });
+            }
+
+            function updateLatestManualSwitch(){
+                // get hunidity data and update table cell
+                let url = "http://api.thingspeak.com/channels/1608893/fields/2.json?results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"manual_switch" : data.feeds[0].field2,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $('#manual_switch'+result.manual_switch).prop('checked', 'true');
+                });
+            }
+
+            function updateLatestAutoThreshold(){
+                // get hunidity data and update table cell
+                let url = "http://api.thingspeak.com/channels/1608893/fields/3.json?results=1"
+                $.getJSON(url, function( data ) {
+                    let result = {"auto_threshold" : data.feeds[0].field3,
+                    "last_update" : data.feeds[0].created_at
+                    } 
+                    // console.log(result);
+                    $('#auto_threshold').val(result.auto_threshold);
+                });
+            }
+
+            function update(){
+                let dn = Date();
+                $('#last_request').text(dn.toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'}))
+                updateLatestTemperature();
+                updateLatestHumidity();
+                updateLatestAirconStatus();
+
+                updateLatestControlMode();
+                updateLatestManualSwitch();
+                updateLatestAutoThreshold();
+            }
+
+            function changeAirconControl(){
+                let controlModeValue = $('input[name="control_mode"]:checked').val();
+                let manualSwitchValue = $('input[name="manual_switch"]:checked').val();
+                let autoThresholdValue = $('#auto_threshold').val();
+                let url = "http://api.thingspeak.com/update?api_key=4RNEV54YURIE2BUI&field1=" + controlModeValue + "&field2=" + manualSwitchValue + "&field3=" +autoThresholdValue;
+                // console.log(url);
+                $.get(url);
+                $("#alert").show(400);
+            }
+
+            $(document).ready(function(){
+                update();
+                setInterval(function(){ 
+                    update();
+                 }, 30 * 1000);
+                $("#save_change").click(function(){
+                    changeAirconControl();
+                })
+                $("#close_alert").click(function(){
+                    $("#alert").hide(400);
+                })
+            })
+            
+            
+        </script>
+
+    
+
+</body></html>
