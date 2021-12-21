@@ -29,7 +29,7 @@ ESP8266WebServer server(80);
 AM2320 th;
 
 //TP-Link SmartPlug
-char* hs110_1 = "192.168.137.134"; //It should be found on mobile hotspot and be changed for each connection
+char* hs110_1 = "192.168.137.151"; //It should be found on mobile hotspot and be changed for each connection
 TPL_SmartPlug SP1(hs110_1);
 
 //API Keys
