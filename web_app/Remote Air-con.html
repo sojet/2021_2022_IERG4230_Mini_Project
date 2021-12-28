@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<!-- saved from url=(0069)http://storage.googleapis.com/bucket-yukikiss/IERG4230_Web/index.html -->
+<!-- saved from url=(0069)http://storage.googleapis.com/bucket-yukikiss/4230_v1-demo/index.html -->
+<meta charset="utf-8">
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
         <title>Remote Air-con</title>
         <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="./Remote Air-con_files/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     </head>
     <body>
         <div class="container">
             <div class="row mt-5">
                 <h3>Data Overview:</h3>
                 <h5>Last Query Time:</h5>
-                <p id="last_request">Thu Dec 16 2021 16:38:59 GMT+0800 (Hong Kong Standard Time)</p>
+                <p id="last_request">Mon Dec 27 2021 21:35:26 GMT+0800 (Hong Kong Standard Time)</p>
                 <table class="table">
                     <thead>
                         <tr>
@@ -22,20 +23,26 @@
                     <tbody>
                         <tr>
                             <td>Temperature</td>
-                            <td id="temperature_value">0</td>
-                            <td id="temperature_update">2021/12/16 &#19978;&#21320;1:57:58</td>
+                            <td id="temperature_value">22.00°C</td>
+                            <td id="temperature_update">2021/12/24 &#19979;&#21320;1:33:38</td>
                         </tr>
 
                         <tr>
                             <td>Humidity</td>
-                            <td id="humidity_value">0</td>
-                            <td id="humidity_update">2021/12/16 &#19978;&#21320;1:57:58</td>
+                            <td id="humidity_value">47.00%</td>
+                            <td id="humidity_update">2021/12/24 &#19979;&#21320;1:33:38</td>
                         </tr>
 
                         <tr>
                             <td>Air-con status</td>
-                            <td id="aircon_value">0 (OFF)</td>
-                            <td id="aircon_update">2021/12/16 &#19978;&#21320;1:57:58</td>
+                            <td id="aircon_value">1 (ON)</td>
+                            <td id="aircon_update">2021/12/24 &#19979;&#21320;1:33:38</td>
+                        </tr>
+
+                        <tr>
+                            <td>Apparent Temperature</td>
+                            <td id="apparent_temp_value">23.32°C</td>
+                            <td id="apparent_temp_update">2021/12/24 &#19979;&#21320;1:33:38</td>
                         </tr>
                     </tbody>
                 </table>
@@ -66,15 +73,15 @@
 
                     <button class="btn btn-primary mt-4 mb-4" id="save_change">Save Changes</button>
                     
-                    <div class="alert alert-info alert-dismissible fade show" id="alert" role="alert">
+                    <div class="alert alert-info alert-dismissible fade show" id="alert" role="alert" style="display: none;">
                         <strong>Success!</strong> Your Air-con control mode has been updated.
                         <button type="button" class="btn-close" id="close_alert"></button>
                     </div>
                 </div>
             </class>
         </div>
-        <script src="./Remote Air-con_files/bootstrap.min.js"></script>
-        <script src="./Remote Air-con_files/jquery.min.js"></script>
+        <script src="./Remote Air-con_files/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+        <script src="./Remote Air-con_files/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <script>
             function translateTimeZone(utcTime){
                 // translate utc time to time in +8 timezone
@@ -82,40 +89,22 @@
                 return dt.toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'});
             }
 
-            function updateLatestTemperature(){
-                // get temperature data and update table cell
-                let url = "http://api.thingspeak.com/channels/1603157/fields/1.json?results=1"
+            function updateSensorData(){
+                let url = "http://api.thingspeak.com/channels/1603157/feeds.json?results=1"
                 $.getJSON(url, function( data ) {
-                    let result = {"temperature" : data.feeds[0].field1,
-                    "last_update" : data.feeds[0].created_at
+                    let result = {
+                        "temperature" : data.feeds[0].field1,
+                        "humidity" : data.feeds[0].field2,
+                        "status" : data.feeds[0].field4,
+                        "last_update" : data.feeds[0].created_at
                     } 
                     // console.log(result);
-                    $("#temperature_value").text(result.temperature);
+                    $("#temperature_value").text(result.temperature + "°C");
                     $("#temperature_update").text(translateTimeZone(result.last_update));
-                });
-            }
-
-            function updateLatestHumidity(){
-                // get hunidity data and update table cell
-                let url = "http://api.thingspeak.com/channels/1603157/fields/2.json?results=1"
-                $.getJSON(url, function( data ) {
-                    let result = {"humidity" : data.feeds[0].field2,
-                    "last_update" : data.feeds[0].created_at
-                    } 
-                    // console.log(result);
-                    $("#humidity_value").text(result.humidity);
+                    
+                    $("#humidity_value").text(result.humidity + "%");
                     $("#humidity_update").text(translateTimeZone(result.last_update));
-                });
-            }
 
-            function updateLatestAirconStatus(){
-                // get current aircon status and update table cell
-                let url = "http://api.thingspeak.com/channels/1603157/fields/4.json?results=1"
-                $.getJSON(url, function( data ) {
-                    let result = {"status" : data.feeds[0].field4,
-                    "last_update" : data.feeds[0].created_at
-                    } 
-                    // console.log(result);
                     if (result.status == 0){
                         result.status += ' (OFF)';
                     } else {
@@ -123,41 +112,28 @@
                     }
                     $("#aircon_value").text(result.status);
                     $("#aircon_update").text(translateTimeZone(result.last_update));
+                    
+                    let hum = parseInt(result.humidity)
+                    let temp = parseInt(result.temperature)
+                    let e = hum / 100 * 6.105 * Math.exp(17.27 * temp / (237.7 + temp));
+                    let at = 1.07 * temp + 0.2 * e - 2.7;
+                    $("#apparent_temp_value").text(at.toFixed(2) + "°C");
+                    $("#apparent_temp_update").text(translateTimeZone(result.last_update));
                 });
             }
 
-            function updateLatestControlMode(){
-                // get hunidity data and update table cell
-                let url = "http://api.thingspeak.com/channels/1608893/fields/1.json?results=1"
+            function updateControl(){
+                let url = "http://api.thingspeak.com/channels/1608893/feeds.json?results=1"
                 $.getJSON(url, function( data ) {
-                    let result = {"control_mode" : data.feeds[0].field1,
-                    "last_update" : data.feeds[0].created_at
+                    let result = {
+                        "control_mode" : data.feeds[0].field1,
+                        "manual_switch" : data.feeds[0].field2,
+                        "auto_threshold" : data.feeds[0].field3,
+                        "last_update" : data.feeds[0].created_at
                     } 
                     // console.log(result);
                     $('#control_mode'+result.control_mode).prop('checked', 'true');
-                });
-            }
-
-            function updateLatestManualSwitch(){
-                // get hunidity data and update table cell
-                let url = "http://api.thingspeak.com/channels/1608893/fields/2.json?results=1"
-                $.getJSON(url, function( data ) {
-                    let result = {"manual_switch" : data.feeds[0].field2,
-                    "last_update" : data.feeds[0].created_at
-                    } 
-                    // console.log(result);
                     $('#manual_switch'+result.manual_switch).prop('checked', 'true');
-                });
-            }
-
-            function updateLatestAutoThreshold(){
-                // get hunidity data and update table cell
-                let url = "http://api.thingspeak.com/channels/1608893/fields/3.json?results=1"
-                $.getJSON(url, function( data ) {
-                    let result = {"auto_threshold" : data.feeds[0].field3,
-                    "last_update" : data.feeds[0].created_at
-                    } 
-                    // console.log(result);
                     $('#auto_threshold').val(result.auto_threshold);
                 });
             }
@@ -165,13 +141,8 @@
             function update(){
                 let dn = Date();
                 $('#last_request').text(dn.toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'}))
-                updateLatestTemperature();
-                updateLatestHumidity();
-                updateLatestAirconStatus();
-
-                updateLatestControlMode();
-                updateLatestManualSwitch();
-                updateLatestAutoThreshold();
+                updateSensorData();
+                updateControl();
             }
 
             function changeAirconControl(){
@@ -179,16 +150,17 @@
                 let manualSwitchValue = $('input[name="manual_switch"]:checked').val();
                 let autoThresholdValue = $('#auto_threshold').val();
                 let url = "http://api.thingspeak.com/update?api_key=4RNEV54YURIE2BUI&field1=" + controlModeValue + "&field2=" + manualSwitchValue + "&field3=" +autoThresholdValue;
-                // console.log(url);
+                console.log(url);
                 $.get(url);
                 $("#alert").show(400);
             }
 
             $(document).ready(function(){
+                $("#alert").hide();
                 update();
                 setInterval(function(){ 
                     update();
-                 }, 30 * 1000);
+                 }, 15 * 1000);
                 $("#save_change").click(function(){
                     changeAirconControl();
                 })
